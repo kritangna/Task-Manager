@@ -1,5 +1,6 @@
 package com.todomanagement.todo_managemnet.service.impl;
 
+import com.todomanagement.todo_managemnet.dto.LoginDto;
 import com.todomanagement.todo_managemnet.dto.RegisterDto;
 import com.todomanagement.todo_managemnet.entity.Role;
 import com.todomanagement.todo_managemnet.entity.User;
@@ -9,6 +10,10 @@ import com.todomanagement.todo_managemnet.repositoty.UserRepository;
 import com.todomanagement.todo_managemnet.service.AuthService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +27,12 @@ public class AuthServiceImpl implements AuthService {
     private UserRepository userRepository;
     private RoleRepository roleRepository;
     private PasswordEncoder passwordEncoder;
+    private AuthenticationManager authenticationManager;
 
     @Override
     public String register(RegisterDto registerDto) {
         // check username is available in th db
-        if(userRepository.existsByUsername(registerDto.getUsername())!=null){
+        if(userRepository.existsByUsername(registerDto.getUsername())){
             throw new TodoAPIException(HttpStatus.BAD_REQUEST, "Username already exists: " + registerDto.getUsername());
         }
 
@@ -47,5 +53,16 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
         return "User Registered Successfully!";
+    }
+
+    @Override
+    public String login(LoginDto loginDto) {
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                loginDto.getUsernameOrEmail(),
+                loginDto.getPassword()
+        ));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        return "User logged in successfully!";
     }
 }
