@@ -1,6 +1,5 @@
 package com.todomanagement.todo_managemnet.security;
 
-
 import com.todomanagement.todo_managemnet.entity.User;
 import com.todomanagement.todo_managemnet.repositoty.UserRepository;
 import lombok.AllArgsConstructor;
@@ -28,10 +27,17 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User doesn't exist with given username and email"));
 
+        System.out.println(user.getName());
+        System.out.println(user.getUsername());
+        System.out.println(user.getEmail());
+        System.out.println(user.getPassword());
         Set<GrantedAuthority> authorities = user.getRoles().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toSet());
 
-        return new org.springframework.security.core.userdetails.User(usernameOrEmail, null, authorities);
+        return new org.springframework.security.core.userdetails.User(
+                usernameOrEmail,
+                user.getPassword(),
+                authorities);
     }
 }
